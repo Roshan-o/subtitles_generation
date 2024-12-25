@@ -1,0 +1,88 @@
+from pydub import AudioSegment as As
+import os
+import video_sub_caps as vsc
+def audio_info(file_path):
+    # Load the audio file
+    audio = As.from_file(file_path,format="mp4")
+    
+    # File size in MB
+    file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
+    
+    # Sampling rate
+    sampling_rate = audio.frame_rate  # in Hz
+    
+    # Number of channels
+    num_channels = audio.channels
+
+    # Duration in seconds (optional)
+    # duration_seconds = len(audio) / 1000
+    
+    # Duration in milliseconds
+    duration_ms = len(audio)
+
+    sample_width = audio.sample_width  # Bytes per sample (e.g., 2 for 16-bit audio)
+    
+    # Bit depth
+    bit_depth = sample_width * 8 
+
+    return file_size_mb, sampling_rate, num_channels, duration_ms,bit_depth
+
+
+def segdivide(file_path,chunk_size_in_mb=24):
+    
+    file_size_mb,sampling_rate,num_channels,duration_ms,bit_depth=audio_info(file_path)
+    if file_size_mb<=24:
+        return file_path
+    audio = As.from_file(file_path,format="mp4")
+
+    # Size per second (bytes)=Sample rate×Bit depth (bytes)×Channels
+    # time_for_chunk_size_in_mb= chunk_size_in_mb / size_per_second
+    # size_per_sec=(sampling_rate*bit_depth*num_channels)//(1024*1024)
+    # time_for_each_chunk=(chunk_size_in_mb*1000//size_per_sec) 
+    # *1000 to convert it into milli seconds
+    # getting wrong using this
+
+    # size_per_second(mb)=file_size_mb/duration_in_sec
+    # time_for_each_chunk=(chunk_size_in_mb)/size_per_sec
+    size_per_sec=((file_size_mb)/duration_ms)*1000
+    time_for_each_chunk=((chunk_size_in_mb) // size_per_sec)*1000
+
+    segments=[]
+    # print(len(audio))
+    # time_for_each_chunk=10000 #in ms
+    for i in range(0,len(audio),time_for_each_chunk):
+        if (i+time_for_each_chunk)>len(audio):
+            segments.append(audio[i:len(audio)])
+        else:
+            segments.append(audio[i:i+time_for_each_chunk])
+    
+    names=[]
+    for idx, segment in enumerate(segments):
+        segment.export(f"chunk_{idx + 1}.mp3", format="mp3")
+        names.append(f"chunk_{idx + 1}.mp3")
+    return names
+
+def convert_chunk(names):
+    final_sub=[]
+    for nm in names:
+        new_list,result=vsc.transcribe_aud(nm)
+        final_sub.extend(new_list)
+        print(result["text"])
+        os.remove(nm)
+    return final_sub
+
+def final(path):
+    names=segdivide(path)
+    final_sub=convert_chunk(names)
+    return final_sub
+
+
+if __name__ == "__main__":
+    path="test.mp4"
+    # names=segdivide(path)
+    # new_list,result=vsc.transcribe_aud(path)
+    # print(result["text"])
+    # print("----------------------------------------------------------------------------------------------")
+    # final_sub=convert_chunk(names)
+    # print("----------------------------------------------------------------------------------------------")
+    # print(final_sub)
