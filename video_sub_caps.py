@@ -4,12 +4,11 @@
 
 import whisper as w
 
-# can set "small" "medium" "large"
-path="test.mp4"
 
 
-model=w.load_model("base")
 def transcribe_aud(path):
+    # can set "small" "medium" "large"
+    model=w.load_model("base")
     result=model.transcribe(path,word_timestamps=True)
     
     # return
@@ -42,6 +41,7 @@ def transcribe_aud(path):
     return new_list,result
 
 if __name__ == "__main__":
+    path="test.mp4"
     new_list,result=transcribe_aud(path)
     print(result["text"])
     print("-----------------------------------------------------------------------------------------------------------------------------------")
