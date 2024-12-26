@@ -30,10 +30,13 @@ def audio_info(file_path):
 
 def segdivide(file_path,chunk_size_in_mb=24):
     
+    names=[]
+    audio = As.from_file(file_path,format="mp4")
     file_size_mb,sampling_rate,num_channels,duration_ms,bit_depth=audio_info(file_path)
     if file_size_mb<=24:
-        return file_path
-    audio = As.from_file(file_path,format="mp4")
+        audio.export("chunk_0",format="mp3")
+        names.append("chunk_0")
+        return names
 
     # Size per second (bytes)=Sample rate×Bit depth (bytes)×Channels
     # time_for_chunk_size_in_mb= chunk_size_in_mb / size_per_second
@@ -56,24 +59,51 @@ def segdivide(file_path,chunk_size_in_mb=24):
         else:
             segments.append(audio[i:i+time_for_each_chunk])
     
-    names=[]
     for idx, segment in enumerate(segments):
         segment.export(f"chunk_{idx + 1}.mp3", format="mp3")
         names.append(f"chunk_{idx + 1}.mp3")
-    return names
+    return duration_ms,names
 
 def convert_chunk(names):
     final_sub=[]
     for nm in names:
         new_list,result=vsc.transcribe_aud(nm)
         final_sub.extend(new_list)
-        print(result["text"])
+        # print(result["text"])
         os.remove(nm)
     return final_sub
 
-def final(path):
-    names=segdivide(path)
+def time_to_SRT(final_sub,total_time):
+    name="subtitles.srt"
+    file=open(name,'w')
+    for i in range(1,len(final_sub)+1,1):
+        segment=final_sub[i-1]
+        st=segment['start']
+        ed=segment['end']
+        if st-0.5>=0:
+            st=st-0.5
+        if ed+0.5<=total_time:
+            ed=ed+0.5
+        fst=sec_process(st)
+        fed=sec_process(ed)
+        if i!=1:
+            file.write("\n")
+        file.write(f"{i}\n")
+        file.write(f"{fst} --> {fed}\n")
+        file.write(f"{segment['word']}\n")
+
+
+def sec_process(st):
+    hr=int(st//(60*60))
+    min=int((st%3600)//60)
+    sec=int(st%60)
+    stmill=round((st - int(st)) * (10**3))
+    return f"{hr}:{min}:{sec},{stmill}"
+
+def final_time(path):
+    duration_ms,names=segdivide(path)
     final_sub=convert_chunk(names)
+    time_to_SRT(final_sub,duration_ms)
     return final_sub
 
 
@@ -82,6 +112,9 @@ if __name__ == "__main__":
     # names=segdivide(path)
     # new_list,result=vsc.transcribe_aud(path)
     # print(result["text"])
+    final_sub=final_time(path)
+    print(final_sub)
+    # time_to_SRT(final_sub)
     # print("----------------------------------------------------------------------------------------------")
     # final_sub=convert_chunk(names)
     # print("----------------------------------------------------------------------------------------------")
