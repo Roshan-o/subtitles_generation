@@ -101,8 +101,10 @@ def sec_process(st):
     return f"{hr}:{min}:{sec},{stmill}"
 
 def final_time(path):
-    duration_ms,names=segdivide(path)
+    names=segdivide(path)
     final_sub=convert_chunk(names)
+    audio=As.audio = As.from_file(path,format="mp4")
+    duration_ms=len(audio)
     time_to_SRT(final_sub,duration_ms)
     return final_sub
 
