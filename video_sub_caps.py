@@ -1,11 +1,6 @@
 
 # import openai as  
-# api_key="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"
-
 import whisper as w
-
-
-
 def transcribe_aud(path):
     # can set "small" "medium" "large"
     model=w.load_model("base")

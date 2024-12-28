@@ -4,7 +4,6 @@ import video_sub_caps as vsc
 def audio_info(file_path):
     # Load the audio file
     audio = As.from_file(file_path,format="mp4")
-    
     # File size in MB
     file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
     
