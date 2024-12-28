@@ -72,8 +72,11 @@ def convert_chunk(names):
         os.remove(nm)
     return final_sub
 
-def time_to_SRT(final_sub,total_time):
-    name="subtitles.srt"
+def time_to_SRT(name,final_sub,path):
+    # name="subtitles.srt"
+    # name=input("enter name of su")
+    audio=As.audio = As.from_file(path,format="mp4")
+    total_time=len(audio)
     file=open(name,'w')
     for i in range(1,len(final_sub)+1,1):
         segment=final_sub[i-1]
@@ -102,9 +105,6 @@ def sec_process(st):
 def final_time(path):
     names=segdivide(path)
     final_sub=convert_chunk(names)
-    audio=As.audio = As.from_file(path,format="mp4")
-    duration_ms=len(audio)
-    time_to_SRT(final_sub,duration_ms)
     return final_sub
 
 
