@@ -1,7 +1,7 @@
 
 # import openai as  
 import whisper as w
-def transcribe_aud(path):
+def transcribe_aud(path,buffer):
     # can set "small" "medium" "large"
     model=w.load_model("base")
     result=model.transcribe(path,word_timestamps=True)
@@ -30,7 +30,7 @@ def transcribe_aud(path):
                 end_t=word_info["end"]
                 str2=word_info["word"]
                 str=str+str2
-            new_list.append({'word':str,'start':start_t,'end':end_t})
+            new_list.append({'word':str,'start':buffer+start_t,'end':buffer+end_t})
             i=i+1
         j=j+1
     return new_list,result

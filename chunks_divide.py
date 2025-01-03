@@ -57,6 +57,7 @@ def segdivide(file_path,chunk_size_in_mb=24):
             segments.append(audio[i:len(audio)])
         else:
             segments.append(audio[i:i+time_for_each_chunk])
+        print(len(segments[len(segments)-1]))
     
     for idx, segment in enumerate(segments):
         segment.export(f"chunk_{idx + 1}.mp3", format="mp3")
@@ -65,9 +66,13 @@ def segdivide(file_path,chunk_size_in_mb=24):
 
 def convert_chunk(names):
     final_sub=[]
+    i=0
     for nm in names:
-        new_list,result=vsc.transcribe_aud(nm)
+        new_list,result=vsc.transcribe_aud(nm,i)
         final_sub.extend(new_list)
+        # aud=As.from_file(nm,format="mp3")
+
+        # i=i+len(aud)
         # print(result["text"])
         os.remove(nm)
     return final_sub
